@@ -27,8 +27,7 @@ class ImagePredictor:
         with open(config_path, "r") as f:
             config = yaml.load(f, yaml.SafeLoader)
         predictor = cls(
-            model_path=config["model_path"],
-            resize_size=config["resize_shape"],
+            model_path=config["model_path"], resize_size=config["resize_shape"],
         )
         return predictor
 
