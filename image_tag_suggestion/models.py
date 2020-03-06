@@ -17,7 +17,7 @@ from tensorflow.keras.metrics import binary_accuracy
 import tensorflow.keras.backend as K
 
 
-def triplet_loss(y_true, y_pred, alpha=0.1):
+def triplet_loss(y_true, y_pred, alpha=0.4):
     """
     https://github.com/KinWaiCheuk/Triplet-net-keras/blob/master/Triplet%20NN%20Test%20on%20MNIST.ipynb
     Implementation of the triplet loss function
@@ -77,6 +77,8 @@ def get_model(
     out2 = GlobalAveragePooling2D()(x1)
     image_representation = Concatenate(axis=-1)([out1, out2])
 
+    image_representation = Dense(embedding_size, name="img_repr")(image_representation)
+
     image_representation = _norm(image_representation)
 
     embed = Embedding(vocab_size, embedding_size, name="embed")
@@ -96,7 +98,7 @@ def get_model(
 
     model = Model([input_1, input_2, input_3], x)
 
-    model_image = Model([input_1, input_2, input_3], x)
+    model_image = Model(input_1, image_representation)
     model_label = Model([input_2], label1)
 
     model.compile(loss=triplet_loss, optimizer=Adam(lr))

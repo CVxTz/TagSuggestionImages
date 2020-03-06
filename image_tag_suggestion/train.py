@@ -31,9 +31,9 @@ def train_from_csv(csv_train, csv_val, csv_labels, training_config_path):
     label_to_int_mapping, _ = label_mapping_from_df(label_df)
 
     train_samples = df_to_list_samples(
-        train, label_df=label_df, fold="validation"
+        train, label_df=label_df, fold="validation_small"
     )  # train
-    val_samples = df_to_list_samples(val, label_df=label_df, fold="validation")
+    val_samples = df_to_list_samples(val, label_df=label_df, fold="validation_small")
 
     train_samples = [
         x

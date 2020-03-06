@@ -24,7 +24,7 @@ def resize_img(img, h=224, w=224):
 
     new_size = tuple([int(x * ratio) for x in old_size])
 
-    im = resize(img, (new_size[0], new_size[1]))
+    im = resize(img, (new_size[0], new_size[1])) * 255
 
     delta_w = desired_size_w - new_size[1]
     delta_h = desired_size_h - new_size[0]
@@ -32,7 +32,7 @@ def resize_img(img, h=224, w=224):
     top, bottom = delta_h // 2, delta_h - (delta_h // 2)
     left, right = delta_w // 2, delta_w - (delta_w // 2)
 
-    new_im = np.ones((h, w, im.shape[-1])) * 255
+    new_im = np.zeros((h, w, im.shape[-1]))
     new_im[top : (im.shape[0] + top), left : (im.shape[1] + left), :] = im
 
     return new_im
