@@ -49,7 +49,7 @@ def triplet_loss(y_true, y_pred, alpha=0.4):
     return loss
 
 
-def get_model_classification(
+def get_model(
     vocab_size=20000,
     input_shape=(None, None, 3),
     model="mobilenet",
