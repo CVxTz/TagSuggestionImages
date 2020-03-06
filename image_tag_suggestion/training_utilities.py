@@ -1,6 +1,6 @@
 from collections import namedtuple
 from pathlib import Path
-from random import shuffle
+from random import shuffle, choice
 import numpy as np
 from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 
@@ -42,6 +42,9 @@ def batch_generator(
     pre_processing_function=None,
     resize_size=(128, 128),
     augment=False,
+    max_value_labels=19982,
+    embedding_size=100,
+    base_path="",
 ):
     seq = get_seq()
     pre_processing_function = (
@@ -52,7 +55,9 @@ def batch_generator(
     while True:
         shuffle(list_samples)
         for batch_samples in chunks(list_samples, size=batch_size):
-            images = [read_img_from_path(sample.path) for sample in batch_samples]
+            images = [
+                read_img_from_path(base_path + sample.path) for sample in batch_samples
+            ]
 
             if augment:
                 images = seq.augment_images(images=images)
@@ -60,16 +65,19 @@ def batch_generator(
             images = [resize_img(x, h=resize_size[0], w=resize_size[1]) for x in images]
 
             images = [pre_processing_function(a) for a in images]
-            targets_positive = [sample.target_vector for sample in batch_samples]
-            targets_negative = [sample.target_vector for sample in batch_samples]
+            targets_positive = [choice(sample.labels) for sample in batch_samples]
+            targets_negative = [
+                np.random.randint(0, max_value_labels + 1) for _ in batch_samples
+            ]
 
             X = np.array(images)
-            Y = np.array(targets)
+            Y1 = np.array(targets_positive)[..., np.newaxis]
+            Y2 = np.array(targets_negative)[..., np.newaxis]
 
-            yield X, Y
+            yield [X, Y1, Y2], np.zeros((len(batch_samples), 3 * embedding_size))
 
 
-def df_to_list_samples(df, label_df, base_path, fold):
+def df_to_list_samples(df, label_df, fold):
     image_name_col = "ImageID"
     label_col = "LabelName"
 
@@ -77,16 +85,11 @@ def df_to_list_samples(df, label_df, base_path, fold):
         label_df
     )
 
-    df = df[[image_name_col, label_col]]
     df[label_col] = df[label_col].map(label_to_int_mapping)
 
     df = df.groupby(image_name_col)[label_col].apply(list).reset_index(name=label_col)
 
-    paths = (
-        df[image_name_col]
-        .apply(lambda x: str(Path(base_path) / fold / (x + ".jpg")))
-        .tolist()
-    )
+    paths = df[image_name_col].apply(lambda x: str(Path(fold) / (x + ".jpg"))).tolist()
     list_labels = df[label_col].values.tolist()
 
     samples = [
@@ -130,10 +133,11 @@ if __name__ == "__main__":
     fold = "oidv6-train"
 
     df = pd.read_csv(
-        Path(config["data_path"]) / ("%s-annotations-human-imagelabels.csv" % fold)
+        Path(config["data_path"]) / ("%s-annotations-human-imagelabels.csv" % fold),
+        usecols=["ImageID", "LabelName"],
     )
 
-    samples = df_to_list_samples(df, label_df, config["data_path"], fold)
+    samples = df_to_list_samples(df, label_df, fold)
 
     print(len(samples))
-    print(len([os.path.isfile(x.path) for x in samples]))
+    print(len([x for x in samples if os.path.isfile(x.path)]))

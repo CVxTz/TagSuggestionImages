@@ -3,46 +3,59 @@ import yaml
 import argparse
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, EarlyStopping
-
+from pathlib import Path
+import os
 from models import get_model
 from training_utilities import (
-    dataframe_to_list_samples,
+    df_to_list_samples,
     batch_generator,
+    label_mapping_from_df,
 )
 
 
-def train_from_csv(csv_path, data_config_path, training_config_path):
-    df = pd.read_csv(csv_path)
-    train, val = train_test_split(df, test_size=0.2, random_state=1337)
+def train_from_csv(csv_train, csv_val, csv_labels, training_config_path):
 
-    with open(data_config_path, "r") as f:
-        data_config = yaml.load(f, yaml.SafeLoader)
     with open(training_config_path, "r") as f:
         training_config = yaml.load(f, yaml.SafeLoader)
 
-    train_samples = dataframe_to_list_samples(
-        train,
-        binary_targets=data_config["targets"],
-        base_path=data_config["images_base_path"],
-        image_name_col=data_config["image_name_col"],
-    )
-    val_samples = dataframe_to_list_samples(
-        val,
-        binary_targets=data_config["targets"],
-        base_path=data_config["images_base_path"],
-        image_name_col=data_config["image_name_col"],
+    train = pd.read_csv(
+        Path(training_config["data_path"]) / csv_train, usecols=["ImageID", "LabelName"]
     )
 
-    model = get_model_classification(
-        input_shape=tuple(data_config["input_shape"]),
-        n_classes=len(data_config["targets"]),
+    val = pd.read_csv(
+        Path(training_config["data_path"]) / csv_val, usecols=["ImageID", "LabelName"]
     )
+
+    label_df = pd.read_csv(Path(training_config["data_path"]) / csv_labels)
+
+    label_to_int_mapping, _ = label_mapping_from_df(label_df)
+
+    train_samples = df_to_list_samples(
+        train, label_df=label_df, fold="validation"
+    )  # train
+    val_samples = df_to_list_samples(val, label_df=label_df, fold="validation")
+
+    train_samples = [
+        x
+        for x in train_samples
+        if os.path.isfile(training_config["data_path"] + x.path)
+    ]
+    val_samples = [
+        x for x in val_samples if os.path.isfile(training_config["data_path"] + x.path)
+    ]
+
+    model, _, _ = get_model(vocab_size=len(label_to_int_mapping))
     train_gen = batch_generator(
         train_samples,
-        resize_size=data_config["resize_shape"],
+        resize_size=training_config["resize_shape"],
         augment=training_config["use_augmentation"],
+        base_path=training_config["data_path"],
     )
-    val_gen = batch_generator(val_samples, resize_size=data_config["resize_shape"])
+    val_gen = batch_generator(
+        val_samples,
+        resize_size=training_config["resize_shape"],
+        base_path=training_config["data_path"],
+    )
 
     checkpoint = ModelCheckpoint(
         training_config["model_path"],
@@ -56,27 +69,30 @@ def train_from_csv(csv_path, data_config_path, training_config_path):
 
     model.fit_generator(
         train_gen,
-        steps_per_epoch=len(train_samples) // training_config["batch_size"],
+        steps_per_epoch=300,  # len(train_samples) // training_config["batch_size"]
         validation_data=val_gen,
-        validation_steps=len(val_samples) // training_config["batch_size"],
+        validation_steps=100,  # len(val_samples) // training_config["batch_size"]
         epochs=training_config["epochs"],
         callbacks=[checkpoint, reduce, early],
+        use_multiprocessing=True,
+        workers=8,
     )
 
 
 if __name__ == "__main__":
-    """
-    python train.py --csv_path "../example/data.csv" \
-                    --data_config_path "../example/data_config.yaml" \
-                    --training_config_path "../example/training_config.yaml"
-    
-    """
     parser = argparse.ArgumentParser()
-    parser.add_argument("--csv_path", help="csv_path", default="../example/data.csv")
     parser.add_argument(
-        "--data_config_path",
-        help="data_config_path",
-        default="../example/data_config.yaml",
+        "--csv_train",
+        help="csv_train",
+        default="validation-annotations-human-imagelabels.csv",  #  oidv6-train
+    )
+    parser.add_argument(
+        "--csv_val",
+        help="csv_val",
+        default="validation-annotations-human-imagelabels.csv",
+    )
+    parser.add_argument(
+        "--csv_labels", help="csv_labels", default="oidv6-class-descriptions.csv"
     )
     parser.add_argument(
         "--training_config_path",
@@ -85,12 +101,15 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    csv_path = args.csv_path
-    data_config_path = args.data_config_path
+    csv_train = args.csv_train
+    csv_val = args.csv_val
+    csv_labels = args.csv_labels
+
     training_config_path = args.training_config_path
 
     train_from_csv(
-        csv_path=csv_path,
-        data_config_path=data_config_path,
+        csv_train=csv_train,
+        csv_val=csv_val,
+        csv_labels=csv_labels,
         training_config_path=training_config_path,
     )

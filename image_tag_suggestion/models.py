@@ -17,7 +17,7 @@ from tensorflow.keras.metrics import binary_accuracy
 import tensorflow.keras.backend as K
 
 
-def triplet_loss(y_true, y_pred, alpha=0.4):
+def triplet_loss(y_true, y_pred, alpha=0.1):
     """
     https://github.com/KinWaiCheuk/Triplet-net-keras/blob/master/Triplet%20NN%20Test%20on%20MNIST.ipynb
     Implementation of the triplet loss function
