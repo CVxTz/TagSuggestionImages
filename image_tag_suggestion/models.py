@@ -89,15 +89,20 @@ def get_model_classification(
 
     x3 = Flatten()(x3)
 
-    x2 = _norm(x2)
-    x3 = _norm(x3)
+    label1 = _norm(x2)
+    label2 = _norm(x3)
 
-    x = Concatenate(axis=-1)([x1, x2, x3])
+    x = Concatenate(axis=-1)([image_representation, label1, label2])
 
     model = Model([input_1, input_2, input_3], x)
 
+    model_image = Model([input_1, input_2, input_3], x)
+    model_label = Model([input_2], label1)
+
     model.compile(loss=triplet_loss, optimizer=Adam(lr))
+    model_image.compile(loss="mae", optimizer=Adam(lr))
+    model_label.compile(loss="mae", optimizer=Adam(lr))
 
     model.summary()
 
-    return model
+    return model, model_image, model_label
