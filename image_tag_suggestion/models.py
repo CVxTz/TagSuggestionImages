@@ -79,7 +79,6 @@ def get_model(
     image_representation = Dropout(0.1)(image_representation)
 
     image_representation = Dense(50, name="img_repr")(image_representation)
-    image_representation = Dropout(0.1)(image_representation)
 
     image_representation = _norm(image_representation)
     if W is not None:
@@ -92,18 +91,14 @@ def get_model(
     dense_label = Dense(50, name="label_repr")
 
     x2 = embed(input_2)
-
     x2 = Flatten()(x2)
     x2 = Dropout(0.1)(x2)
     x2 = dense_label(x2)
-    x2 = Dropout(0.1)(x2)
 
     x3 = embed(input_3)
-
     x3 = Flatten()(x3)
     x3 = Dropout(0.1)(x3)
     x3 = dense_label(x3)
-    x3 = Dropout(0.1)(x3)
 
     label1 = _norm(x2)
     label2 = _norm(x3)

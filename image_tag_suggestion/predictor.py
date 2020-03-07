@@ -21,7 +21,7 @@ class ImagePredictor:
     ):
         self.model_path = model_path
         self.pre_processing_function = pre_processing_function
-        self.model = load_model(self.model_path)
+        self.model = load_model(self.model_path, compile=False)
         self.resize_size = resize_size
 
     @classmethod
