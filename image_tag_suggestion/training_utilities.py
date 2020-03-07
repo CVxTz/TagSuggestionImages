@@ -1,7 +1,7 @@
 from collections import namedtuple
 from pathlib import Path
 from random import shuffle, choice
-
+import spacy
 import numpy as np
 from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 
@@ -82,7 +82,7 @@ def df_to_list_samples(df, label_df, fold):
     image_name_col = "ImageID"
     label_col = "LabelName"
 
-    label_to_int_mapping, display_labels_to_int_mapping = label_mapping_from_df(
+    label_to_int_mapping, display_labels_to_int_mapping, W = label_mapping_from_df(
         label_df
     )
 
@@ -102,6 +102,8 @@ def df_to_list_samples(df, label_df, fold):
 
 
 def label_mapping_from_df(label_df):
+    nlp = spacy.load("en_core_web_md")
+
     labels = label_df["LabelName"].tolist()
     display_labels = label_df["DisplayName"].tolist()
     label_to_int_mapping = {x: i for x, i in zip(labels, range(len(labels)))}
@@ -109,7 +111,13 @@ def label_mapping_from_df(label_df):
         x: i for x, i in zip(display_labels, range(len(display_labels)))
     }
 
-    return label_to_int_mapping, display_labels_to_int_mapping
+    W = np.random.uniform(-0.1, 0.1, size=(len(display_labels), 300))
+
+    for i in range(len(display_labels)):
+        d_name = display_labels[i]
+        W[i, :] = nlp(d_name).vector
+
+    return label_to_int_mapping, display_labels_to_int_mapping, W
 
 
 if __name__ == "__main__":

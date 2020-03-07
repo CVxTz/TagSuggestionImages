@@ -23,13 +23,15 @@ def train_from_csv(csv_train, csv_val, csv_labels, training_config_path):
         Path(training_config["data_path"]) / csv_train, usecols=["ImageID", "LabelName"]
     )
 
+    train = train[train["ImageID"].str.startswith("c")]
+
     val = pd.read_csv(
         Path(training_config["data_path"]) / csv_val, usecols=["ImageID", "LabelName"]
     )
 
     label_df = pd.read_csv(Path(training_config["data_path"]) / csv_labels)
 
-    label_to_int_mapping, display_labels_to_int_mapping = label_mapping_from_df(
+    label_to_int_mapping, display_labels_to_int_mapping, W = label_mapping_from_df(
         label_df
     )
 
@@ -47,7 +49,7 @@ def train_from_csv(csv_train, csv_val, csv_labels, training_config_path):
         x for x in val_samples if os.path.isfile(training_config["data_path"] + x.path)
     ]
 
-    model, _, _ = get_model(vocab_size=len(label_to_int_mapping))
+    model, _, _ = get_model(vocab_size=len(label_to_int_mapping), W=W)
     train_gen = batch_generator(
         train_samples,
         resize_size=training_config["resize_shape"],
@@ -70,8 +72,13 @@ def train_from_csv(csv_train, csv_val, csv_labels, training_config_path):
     reduce = ReduceLROnPlateau(monitor="val_loss", mode="min", patience=10, min_lr=1e-7)
     early = EarlyStopping(monitor="val_loss", mode="min", patience=30)
 
-    with open(training_config["resize_shape"], "w") as f:
-        json.dump(display_labels_to_int_mapping, f)
+    with open(training_config["label_display_to_int"], "w") as f:
+        json.dump(display_labels_to_int_mapping, f, indent=4)
+
+    try:
+        model.load_weights(training_config["model_path"])
+    except:
+        print("No model to load")
 
     model.fit_generator(
         train_gen,
@@ -90,7 +97,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--csv_train",
         help="csv_train",
-        default="oidv6-train-annotations-human-imagelabels.csv",  #  oidv6-train
+        default="c-train-annotations-human-imagelabels.csv",  #  oidv6-train
     )
     parser.add_argument(
         "--csv_val",

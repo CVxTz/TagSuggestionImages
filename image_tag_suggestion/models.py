@@ -52,8 +52,10 @@ def get_model(
     input_shape=(None, None, 3),
     model="mobilenet",
     weights="imagenet",
-    embedding_size=100,
+    embedding_size=300,
     lr=0.0001,
+    W=None,
+    trainable=False,
 ):
     input_1 = Input(input_shape)
     input_2 = Input(shape=(1,))
@@ -74,20 +76,34 @@ def get_model(
     out1 = GlobalMaxPooling2D()(Dropout(0.5)(x1))
     out2 = GlobalAveragePooling2D()(x1)
     image_representation = Concatenate(axis=-1)([out1, out2])
+    image_representation = Dropout(0.2)(image_representation)
 
-    image_representation = Dense(embedding_size, name="img_repr")(image_representation)
+    image_representation = Dense(50, name="img_repr")(image_representation)
+    image_representation = Dropout(0.2)(image_representation)
 
     image_representation = _norm(image_representation)
+    if W is not None:
+        embed = Embedding(
+            vocab_size, embedding_size, name="embed", weights=[W], trainable=trainable
+        )
+    else:
+        embed = Embedding(vocab_size, embedding_size, name="embed")
 
-    embed = Embedding(vocab_size, embedding_size, name="embed")
+    dense_label = Dense(50, name="label_repr")
 
     x2 = embed(input_2)
 
     x2 = Flatten()(x2)
+    x2 = Dropout(0.2)(x2)
+    x2 = dense_label(x2)
+    x2 = Dropout(0.2)(x2)
 
     x3 = embed(input_3)
 
     x3 = Flatten()(x3)
+    x3 = Dropout(0.2)(x3)
+    x3 = dense_label(x3)
+    x3 = Dropout(0.2)(x3)
 
     label1 = _norm(x2)
     label2 = _norm(x3)
@@ -104,5 +120,7 @@ def get_model(
     model_label.compile(loss="mae", optimizer=Adam(lr))
 
     model.summary()
+    model_image.summary()
+    model_label.summary()
 
     return model, model_image, model_label
