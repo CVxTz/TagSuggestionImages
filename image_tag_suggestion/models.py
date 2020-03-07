@@ -1,3 +1,4 @@
+import tensorflow.keras.backend as K
 from tensorflow.keras.applications import MobileNetV2, ResNet50
 from tensorflow.keras.layers import (
     Dense,
@@ -10,11 +11,8 @@ from tensorflow.keras.layers import (
     Embedding,
     Lambda,
 )
-from tensorflow.keras.losses import binary_crossentropy, categorical_crossentropy
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.metrics import binary_accuracy
-import tensorflow.keras.backend as K
 
 
 def triplet_loss(y_true, y_pred, alpha=0.4):

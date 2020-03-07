@@ -1,10 +1,12 @@
+import argparse
+import json
+import os
+from pathlib import Path
+
 import pandas as pd
 import yaml
-import argparse
-from sklearn.model_selection import train_test_split
 from tensorflow.keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, EarlyStopping
-from pathlib import Path
-import os
+
 from models import get_model
 from training_utilities import (
     df_to_list_samples,
@@ -14,7 +16,6 @@ from training_utilities import (
 
 
 def train_from_csv(csv_train, csv_val, csv_labels, training_config_path):
-
     with open(training_config_path, "r") as f:
         training_config = yaml.load(f, yaml.SafeLoader)
 
@@ -28,10 +29,12 @@ def train_from_csv(csv_train, csv_val, csv_labels, training_config_path):
 
     label_df = pd.read_csv(Path(training_config["data_path"]) / csv_labels)
 
-    label_to_int_mapping, _ = label_mapping_from_df(label_df)
+    label_to_int_mapping, display_labels_to_int_mapping = label_mapping_from_df(
+        label_df
+    )
 
     train_samples = df_to_list_samples(
-        train, label_df=label_df, fold="validation_small"
+        train, label_df=label_df, fold="train_c_small"
     )  # train
     val_samples = df_to_list_samples(val, label_df=label_df, fold="validation_small")
 
@@ -67,6 +70,9 @@ def train_from_csv(csv_train, csv_val, csv_labels, training_config_path):
     reduce = ReduceLROnPlateau(monitor="val_loss", mode="min", patience=10, min_lr=1e-7)
     early = EarlyStopping(monitor="val_loss", mode="min", patience=30)
 
+    with open(training_config["resize_shape"], "w") as f:
+        json.dump(display_labels_to_int_mapping, f)
+
     model.fit_generator(
         train_gen,
         steps_per_epoch=300,  # len(train_samples) // training_config["batch_size"]
@@ -84,7 +90,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--csv_train",
         help="csv_train",
-        default="validation-annotations-human-imagelabels.csv",  #  oidv6-train
+        default="oidv6-train-annotations-human-imagelabels.csv",  #  oidv6-train
     )
     parser.add_argument(
         "--csv_val",

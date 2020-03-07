@@ -5,12 +5,12 @@ import yaml
 from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 from tensorflow.keras.models import load_model
 
+from image_tag_suggestion.utils import download_model
 from preprocessing_utilities import (
     read_img_from_path,
     resize_img,
     read_from_file,
 )
-from image_tag_suggestion.utils import download_model
 
 
 class ImagePredictor:

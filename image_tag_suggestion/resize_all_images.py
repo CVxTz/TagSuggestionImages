@@ -1,15 +1,16 @@
+import os
+import shutil
+from glob import glob
+
+import numpy as np
+import yaml
+from imageio import imwrite
+from tqdm import tqdm
+
 from preprocessing_utilities import (
     read_img_from_path,
     resize_img,
 )
-from tqdm import tqdm
-from glob import glob
-import os
-import yaml
-from imageio import imwrite
-import numpy as np
-import shutil
-
 
 if __name__ == "__main__":
 
@@ -17,7 +18,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--fold", help="fold", default="validation",  #  oidv6-train
+        "--fold", help="fold", default="train_c",
     )
     args = parser.parse_args()
 
@@ -26,7 +27,7 @@ if __name__ == "__main__":
 
     fold = args.fold
     folder = training_config["data_path"] + fold + "_small"
-    shutil.rmtree(folder)
+    shutil.rmtree(folder, ignore_errors=True)
     os.makedirs(folder, exist_ok=True)
 
     images = glob(training_config["data_path"] + fold + "/*.jpg")

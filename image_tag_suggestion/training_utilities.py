@@ -1,6 +1,7 @@
 from collections import namedtuple
 from pathlib import Path
 from random import shuffle, choice
+
 import numpy as np
 from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 
