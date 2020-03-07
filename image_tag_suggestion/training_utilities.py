@@ -67,8 +67,12 @@ def batch_generator(
 
             images = [pre_processing_function(a) for a in images]
             targets_positive = [choice(sample.labels) for sample in batch_samples]
+            targets_negative = targets_positive[::-1]
             targets_negative = [
-                np.random.randint(0, max_value_labels + 1) for _ in batch_samples
+                x
+                if x not in sample.labels
+                else np.random.randint(0, max_value_labels + 1)
+                for x, sample in zip(targets_negative, batch_samples)
             ]
 
             X = np.array(images)

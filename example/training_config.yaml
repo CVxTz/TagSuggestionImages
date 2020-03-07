@@ -1,4 +1,5 @@
 use_augmentation: true
+train_embeddings: true
 batch_size: 64
 epochs: 1000
 resize_shape: [224, 224]

@@ -49,7 +49,11 @@ def train_from_csv(csv_train, csv_val, csv_labels, training_config_path):
         x for x in val_samples if os.path.isfile(training_config["data_path"] + x.path)
     ]
 
-    model, _, _ = get_model(vocab_size=len(label_to_int_mapping), W=W)
+    model, _, _ = get_model(
+        vocab_size=len(label_to_int_mapping),
+        W=W,
+        trainable=training_config["train_embeddings"],
+    )
     train_gen = batch_generator(
         train_samples,
         resize_size=training_config["resize_shape"],
@@ -97,7 +101,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--csv_train",
         help="csv_train",
-        default="c-train-annotations-human-imagelabels.csv",  #  oidv6-train
+        default="c3-train-annotations-human-imagelabels.csv",  #  oidv6-train
     )
     parser.add_argument(
         "--csv_val",

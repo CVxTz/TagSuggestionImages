@@ -12,7 +12,7 @@ train = pd.read_csv(
     usecols=["ImageID", "LabelName"],
 )
 
-train = train[train["ImageID"].str.startswith("c|3")]
+train = train[train["ImageID"].str.startswith("c") + train["ImageID"].str.startswith("3")]
 
 train.to_csv(
     Path(training_config["data_path"]) / "c3-train-annotations-human-imagelabels.csv",
