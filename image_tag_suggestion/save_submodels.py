@@ -26,13 +26,13 @@ def save_sub_models(training_config_path):
     except:
         print("No model to load")
 
-    model_image.save_weights(training_config["image_model_path"])
+    model_image.save(training_config["image_model_path"], include_optimizer=False)
 
-    n_labels = len(display_labels_to_int_mapping)
+    n_labels = max(display_labels_to_int_mapping.values())
 
     print(n_labels)
 
-    pred_vectors = model_label.predict(np.array(range(n_labels))[..., np.newaxis])
+    pred_vectors = model_label.predict(np.array(range(n_labels+1))[..., np.newaxis])
 
     print(pred_vectors.shape)
 

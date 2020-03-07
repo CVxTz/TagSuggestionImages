@@ -73,13 +73,13 @@ def get_model(
         )
 
     x1 = base_model(input_1)
-    out1 = GlobalMaxPooling2D()(Dropout(0.5)(x1))
+    out1 = GlobalMaxPooling2D()(Dropout(0.1)(x1))
     out2 = GlobalAveragePooling2D()(x1)
     image_representation = Concatenate(axis=-1)([out1, out2])
-    image_representation = Dropout(0.2)(image_representation)
+    image_representation = Dropout(0.1)(image_representation)
 
     image_representation = Dense(50, name="img_repr")(image_representation)
-    image_representation = Dropout(0.2)(image_representation)
+    image_representation = Dropout(0.1)(image_representation)
 
     image_representation = _norm(image_representation)
     if W is not None:
@@ -94,16 +94,16 @@ def get_model(
     x2 = embed(input_2)
 
     x2 = Flatten()(x2)
-    x2 = Dropout(0.2)(x2)
+    x2 = Dropout(0.1)(x2)
     x2 = dense_label(x2)
-    x2 = Dropout(0.2)(x2)
+    x2 = Dropout(0.1)(x2)
 
     x3 = embed(input_3)
 
     x3 = Flatten()(x3)
-    x3 = Dropout(0.2)(x3)
+    x3 = Dropout(0.1)(x3)
     x3 = dense_label(x3)
-    x3 = Dropout(0.2)(x3)
+    x3 = Dropout(0.1)(x3)
 
     label1 = _norm(x2)
     label2 = _norm(x3)
