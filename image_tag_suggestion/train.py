@@ -50,10 +50,13 @@ def train_from_csv(csv_train, csv_val, csv_labels, training_config_path):
     ]
 
     model, _, _ = get_model(
-        vocab_size=len(label_to_int_mapping),
+        vocab_size=max(label_to_int_mapping.values()) + 1,
         W=W,
         trainable=training_config["train_embeddings"],
     )
+    print("train_samples", len(train_samples))
+    print("val_samples", len(val_samples))
+
     train_gen = batch_generator(
         train_samples,
         resize_size=training_config["resize_shape"],
@@ -73,8 +76,8 @@ def train_from_csv(csv_train, csv_val, csv_labels, training_config_path):
         save_best_only=True,
         mode="min",
     )
-    reduce = ReduceLROnPlateau(monitor="val_loss", mode="min", patience=10, min_lr=1e-7)
-    early = EarlyStopping(monitor="val_loss", mode="min", patience=30)
+    reduce = ReduceLROnPlateau(monitor="val_loss", mode="min", patience=50, min_lr=1e-7)
+    early = EarlyStopping(monitor="val_loss", mode="min", patience=300)
 
     with open(training_config["label_display_to_int"], "w") as f:
         json.dump(display_labels_to_int_mapping, f, indent=4)

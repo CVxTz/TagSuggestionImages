@@ -1,8 +1,9 @@
 from collections import namedtuple
 from pathlib import Path
 from random import shuffle, choice
-import spacy
+
 import numpy as np
+import spacy
 from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 
 from preprocessing_utilities import (
@@ -127,7 +128,6 @@ def label_mapping_from_df(label_df):
 if __name__ == "__main__":
     import yaml
     import pandas as pd
-    import os
 
     config_path = Path("../example/training_config.yaml")
 
@@ -136,21 +136,10 @@ if __name__ == "__main__":
 
     label_df = pd.read_csv(Path(config["data_path"]) / "oidv6-class-descriptions.csv")
 
-    label_to_int, display_to_int_labels = label_mapping_from_df(label_df)
+    label_to_int, display_to_int_labels, W = label_mapping_from_df(label_df)
 
-    print(len(display_to_int_labels))
+    print("display_to_int_labels", len(display_to_int_labels))
+    print("label_to_int", len(label_to_int))
 
-    print(label_to_int)
-    print(display_to_int_labels)
-
-    fold = "oidv6-train"
-
-    df = pd.read_csv(
-        Path(config["data_path"]) / ("%s-annotations-human-imagelabels.csv" % fold),
-        usecols=["ImageID", "LabelName"],
-    )
-
-    samples = df_to_list_samples(df, label_df, fold)
-
-    print(len(samples))
-    print(len([x for x in samples if os.path.isfile(x.path)]))
+    print("display_to_int_labels", max(display_to_int_labels.values()))
+    print("label_to_int", max(label_to_int.values()))
