@@ -16,7 +16,7 @@ import imgaug.augmenters as iaa
 
 
 def chunks(seq, size):
-    return (seq[pos : pos + size] for pos in range(0, len(seq), size))
+    return (seq[pos: pos + size] for pos in range(0, len(seq), size))
 
 
 def get_seq():
@@ -39,14 +39,14 @@ def get_seq():
 
 
 def batch_generator(
-    list_samples,
-    batch_size=32,
-    pre_processing_function=None,
-    resize_size=(128, 128),
-    augment=False,
-    max_value_labels=19982,
-    embedding_size=100,
-    base_path="",
+        list_samples,
+        batch_size=32,
+        pre_processing_function=None,
+        resize_size=(128, 128),
+        augment=False,
+        max_value_labels=19982,
+        embedding_size=100,
+        base_path="",
 ):
     seq = get_seq()
     pre_processing_function = (
@@ -71,7 +71,7 @@ def batch_generator(
             targets_negative = targets_positive[::-1]
             targets_negative = [
                 x
-                if x not in sample.labels
+                if x not in sample.labels and np.random.uniform(0, 1) < 0.9
                 else np.random.randint(0, max_value_labels + 1)
                 for x, sample in zip(targets_negative, batch_samples)
             ]

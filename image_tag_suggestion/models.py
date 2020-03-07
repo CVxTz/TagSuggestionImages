@@ -30,9 +30,9 @@ def triplet_loss(y_true, y_pred, alpha=0.4):
     """
 
     total_lenght = y_pred.shape.as_list()[-1]
-    anchor = y_pred[:, 0 : int(total_lenght * 1 / 3)]
-    positive = y_pred[:, int(total_lenght * 1 / 3) : int(total_lenght * 2 / 3)]
-    negative = y_pred[:, int(total_lenght * 2 / 3) : int(total_lenght * 3 / 3)]
+    anchor = y_pred[:, 0: int(total_lenght * 1 / 3)]
+    positive = y_pred[:, int(total_lenght * 1 / 3): int(total_lenght * 2 / 3)]
+    negative = y_pred[:, int(total_lenght * 2 / 3): int(total_lenght * 3 / 3)]
 
     # distance between the anchor and the positive
     pos_dist = K.sum(K.square(anchor - positive), axis=1)
@@ -48,14 +48,14 @@ def triplet_loss(y_true, y_pred, alpha=0.4):
 
 
 def get_model(
-    vocab_size=20000,
-    input_shape=(None, None, 3),
-    model="mobilenet",
-    weights="imagenet",
-    embedding_size=300,
-    lr=0.0001,
-    W=None,
-    trainable=False,
+        vocab_size=20000,
+        input_shape=(None, None, 3),
+        model="mobilenet",
+        weights="imagenet",
+        embedding_size=300,
+        lr=0.0001,
+        W=None,
+        trainable=False,
 ):
     input_1 = Input(input_shape)
     input_2 = Input(shape=(1,))

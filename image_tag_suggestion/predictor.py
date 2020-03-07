@@ -7,12 +7,12 @@ import yaml
 from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 from tensorflow.keras.models import load_model
 
-from utils import download_model
-from preprocessing_utilities import (
+from image_tag_suggestion.preprocessing_utilities import (
     read_img_from_path,
     resize_img,
     read_from_file,
 )
+from image_tag_suggestion.utils import download_model
 
 
 class ImagePredictor:
@@ -56,7 +56,7 @@ class ImagePredictor:
 
     def predict_from_file(self, file_object):
         arr = read_from_file(file_object)
-        return self.predict_from_array(arr)
+        return self.predict_from_array(arr), arr
 
 
 class LabelPredictor:
@@ -66,7 +66,7 @@ class LabelPredictor:
         self.json_path = json_path
         with open(self.json_path, 'r') as f:
             self.labels = json.load(f)
-        self.labels_arrays = {k:np.array(v) for k, v in self.labels.items()}
+        self.labels_arrays = {k: np.array(v) for k, v in self.labels.items()}
 
     @classmethod
     def init_from_config_path(cls, config_path):
@@ -89,13 +89,13 @@ class LabelPredictor:
         return cls.init_from_config_path(config_path)
 
     def predict_from_array(self, img_arr):
-        preds = [(k, 1 - np.sum((img_arr-v)**2) / 4) for k, v in self.labels_arrays.items()]
+        preds = [(k, 1 - np.sum((img_arr - v) ** 2) / 4) for k, v in self.labels_arrays.items()]
         preds.sort(key=lambda x: x[1], reverse=True)
 
         return preds[:20]
 
     def predict_dataframe_from_array(self, img_arr):
-        preds = [(k, 1 - np.sum((img_arr-v)**2) / 4) for k, v in self.labels_arrays.items()]
+        preds = [(k, 1 - np.sum((img_arr - v) ** 2) / 4) for k, v in self.labels_arrays.items()]
         preds.sort(key=lambda x: x[1], reverse=True)
 
         df = pd.DataFrame({"label": [x[0] for x in preds[:20]], "scores": [x[1] for x in preds[:20]]})
@@ -130,4 +130,3 @@ if __name__ == "__main__":
     preds = label_predictor.predict_dataframe_from_array(pred)
 
     print(preds)
-

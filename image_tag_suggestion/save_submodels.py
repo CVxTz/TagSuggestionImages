@@ -32,7 +32,7 @@ def save_sub_models(training_config_path):
 
     print(n_labels)
 
-    pred_vectors = model_label.predict(np.array(range(n_labels+1))[..., np.newaxis])
+    pred_vectors = model_label.predict(np.array(range(n_labels + 1))[..., np.newaxis])
 
     print(pred_vectors.shape)
 
