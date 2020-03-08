@@ -5,7 +5,7 @@ import altair as alt
 sys.path.append("../")
 
 import streamlit as st
-from image_tag_suggestion import predictor
+import predictor
 
 st.title("Image Tag Suggestion")
 

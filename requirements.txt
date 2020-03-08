@@ -8,3 +8,5 @@ scikit_image==0.16.2
 PyYAML==5.3
 scikit-learn==0.22.2.post1
 scikit-image==0.16.2
+streamlit==0.56.0
+altair==4.0.1

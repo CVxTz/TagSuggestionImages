@@ -1,9 +1,14 @@
 FROM python:3.6-slim
-COPY app/main.py /deploy/
-COPY app/config.yaml /deploy/
+COPY image_tag_suggestion/main.py image_tag_suggestion/preprocessing_utilities.py /deploy/
+COPY image_tag_suggestion/predictor.py image_tag_suggestion/utils.py /deploy/
+COPY image_tag_suggestion/config.yaml /deploy/
+COPY image_tag_suggestion/image_representation.h5 /deploy/
+# Download from https://github.com/CVxTz/TagSuggestionImages/releases
+COPY image_tag_suggestion/labels.json /deploy/
+# Download from https://github.com/CVxTz/TagSuggestionImages/releases
+COPY requirements.txt /deploy/
 WORKDIR /deploy/
-RUN wget -O repo.zip http://github.com/CVxTz/TagSuggestionImages/zipball/master/
-RUN pip install repo.zip
-EXPOSE 8080
+RUN pip install -r requirements.txt
+EXPOSE 8501
 
-ENTRYPOINT uvicorn main:app --host 0.0.0.0 --port 8080 --workers 1
+ENTRYPOINT streamlit run main.py
