@@ -15,7 +15,7 @@ file = st.file_uploader("Upload file", type=["jpg"])
 predictor_config_path = (
     "config.yaml"
     if os.path.isfile("config.yaml")
-    else os.path.isfile("image_tag_suggestion/config.yaml")
+    else "image_tag_suggestion/config.yaml"
 )
 
 image_predictor = predictor.ImagePredictor.init_from_config_url(predictor_config_path)
