@@ -14,7 +14,7 @@ except:
 setup(
     name="image_tag_suggestion",
     version="0.1.0",
-    description="Tiny library for image classification",
+    description="Tiny library for image tag suggestion",
     author="Youness Mansar",
     author_email="mansaryounessecp@gmail.com",
     url="https://github.com/CVxTz/TagSuggestionImages",
