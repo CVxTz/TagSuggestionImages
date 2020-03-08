@@ -1,0 +1,1 @@
+web: streamlit run image_tag_suggestion/main.py
