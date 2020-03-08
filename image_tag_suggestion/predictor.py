@@ -17,7 +17,7 @@ from utils import download_model
 
 class ImagePredictor:
     def __init__(
-            self, model_path, resize_size, pre_processing_function=preprocess_input
+        self, model_path, resize_size, pre_processing_function=preprocess_input
     ):
         self.model_path = model_path
         self.pre_processing_function = pre_processing_function
@@ -39,7 +39,9 @@ class ImagePredictor:
             config = yaml.load(f, yaml.SafeLoader)
 
         download_model(
-            config["image_model_model_url"], config["image_model_path"], config["image_model_sha256"]
+            config["image_model_model_url"],
+            config["image_model_path"],
+            config["image_model_sha256"],
         )
 
         return cls.init_from_config_path(config_path)
@@ -60,11 +62,9 @@ class ImagePredictor:
 
 
 class LabelPredictor:
-    def __init__(
-            self, json_path
-    ):
+    def __init__(self, json_path):
         self.json_path = json_path
-        with open(self.json_path, 'r') as f:
+        with open(self.json_path, "r") as f:
             self.labels = json.load(f)
         self.labels_arrays = {k: np.array(v) for k, v in self.labels.items()}
 
@@ -72,9 +72,7 @@ class LabelPredictor:
     def init_from_config_path(cls, config_path):
         with open(config_path, "r") as f:
             config = yaml.load(f, yaml.SafeLoader)
-        predictor = cls(
-            json_path=config["label_embedding_path"]
-        )
+        predictor = cls(json_path=config["label_embedding_path"])
         return predictor
 
     @classmethod
@@ -83,22 +81,32 @@ class LabelPredictor:
             config = yaml.load(f, yaml.SafeLoader)
 
         download_model(
-            config["label_embedding_url"], config["label_embedding_path"], config["label_embedding_sha256"]
+            config["label_embedding_url"],
+            config["label_embedding_path"],
+            config["label_embedding_sha256"],
         )
 
         return cls.init_from_config_path(config_path)
 
     def predict_from_array(self, img_arr):
-        preds = [(k, 1 - np.sum((img_arr - v) ** 2) / 4) for k, v in self.labels_arrays.items()]
+        preds = [
+            (k, 1 - np.sum((img_arr - v) ** 2) / 4)
+            for k, v in self.labels_arrays.items()
+        ]
         preds.sort(key=lambda x: x[1], reverse=True)
 
         return preds[:20]
 
     def predict_dataframe_from_array(self, img_arr):
-        preds = [(k, 1 - np.sum((img_arr - v) ** 2) / 4) for k, v in self.labels_arrays.items()]
+        preds = [
+            (k, 1 - np.sum((img_arr - v) ** 2) / 4)
+            for k, v in self.labels_arrays.items()
+        ]
         preds.sort(key=lambda x: x[1], reverse=True)
 
-        df = pd.DataFrame({"label": [x[0] for x in preds[:20]], "scores": [x[1] for x in preds[:20]]})
+        df = pd.DataFrame(
+            {"label": [x[0] for x in preds[:20]], "scores": [x[1] for x in preds[:20]]}
+        )
 
         return df
 
@@ -110,9 +118,7 @@ if __name__ == "__main__":
     """
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--predictor_config_path",
-        help="predictor_config_path",
-        default="config.yaml",
+        "--predictor_config_path", help="predictor_config_path", default="config.yaml",
     )
 
     args = parser.parse_args()
@@ -121,9 +127,7 @@ if __name__ == "__main__":
 
     predictor = ImagePredictor.init_from_config_url(predictor_config_path)
 
-    pred = predictor.predict_from_path(
-        "../example/data/0b44f28fa177010c.jpg"
-    )
+    pred = predictor.predict_from_path("../example/data/0b44f28fa177010c.jpg")
 
     label_predictor = LabelPredictor.init_from_config_url(predictor_config_path)
 

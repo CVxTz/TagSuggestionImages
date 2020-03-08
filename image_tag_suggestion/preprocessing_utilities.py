@@ -33,6 +33,6 @@ def resize_img(img, h=224, w=224):
     left, right = delta_w // 2, delta_w - (delta_w // 2)
 
     new_im = np.zeros((h, w, im.shape[-1]))
-    new_im[top: (im.shape[0] + top), left: (im.shape[1] + left), :] = im
+    new_im[top : (im.shape[0] + top), left : (im.shape[1] + left), :] = im
 
     return new_im
