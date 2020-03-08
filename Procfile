@@ -1,1 +1,1 @@
-web: streamlit run image_tag_suggestion/main.py
+web: sh setup.sh && streamlit run image_tag_suggestion/main.py
