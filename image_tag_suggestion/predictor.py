@@ -7,12 +7,12 @@ import yaml
 from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 from tensorflow.keras.models import load_model
 
-from image_tag_suggestion.preprocessing_utilities import (
+from preprocessing_utilities import (
     read_img_from_path,
     resize_img,
     read_from_file,
 )
-from image_tag_suggestion.utils import download_model
+from utils import download_model
 
 
 class ImagePredictor:
@@ -39,7 +39,7 @@ class ImagePredictor:
             config = yaml.load(f, yaml.SafeLoader)
 
         download_model(
-            config["model_url"], config["image_model_path"], config["model_sha256"]
+            config["image_model_model_url"], config["image_model_path"], config["image_model_sha256"]
         )
 
         return cls.init_from_config_path(config_path)
@@ -105,27 +105,27 @@ class LabelPredictor:
 
 if __name__ == "__main__":
     """
-    python predictor.py --predictor_config "../example/predictor_config.yaml"
+    python predictor.py --predictor_config "config.yaml"
 
     """
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--predictor_config_path",
         help="predictor_config_path",
-        default="../example/predictor_config.yaml",
+        default="config.yaml",
     )
 
     args = parser.parse_args()
 
     predictor_config_path = args.predictor_config_path
 
-    predictor = ImagePredictor.init_from_config_path(predictor_config_path)
+    predictor = ImagePredictor.init_from_config_url(predictor_config_path)
 
     pred = predictor.predict_from_path(
         "../example/data/0b44f28fa177010c.jpg"
     )
 
-    label_predictor = LabelPredictor.init_from_config_path(predictor_config_path)
+    label_predictor = LabelPredictor.init_from_config_url(predictor_config_path)
 
     preds = label_predictor.predict_dataframe_from_array(pred)
 

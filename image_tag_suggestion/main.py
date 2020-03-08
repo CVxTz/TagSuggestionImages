@@ -13,8 +13,8 @@ file = st.file_uploader("Upload file", type=['jpg'])
 
 predictor_config_path = "config.yaml"
 
-image_predictor = predictor.ImagePredictor.init_from_config_path(predictor_config_path)
-label_predictor = predictor.LabelPredictor.init_from_config_path(predictor_config_path)
+image_predictor = predictor.ImagePredictor.init_from_config_url(predictor_config_path)
+label_predictor = predictor.LabelPredictor.init_from_config_url(predictor_config_path)
 
 if file:
     pred, arr = image_predictor.predict_from_file(file)
